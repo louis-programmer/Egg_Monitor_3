@@ -7,59 +7,30 @@ use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function edit()
     {
-        //
+        $setting = Setting::first();
+
+        return view('settings.edit', compact('setting'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function update(Request $request)
     {
-        //
-    }
+        $validated = $request->validate([
+            'preset_setter_survival_rate' => 'required|numeric|min:0|max:100',
+            'preset_hatcher_survival_rate' => 'required|numeric|min:0|max:100',
+            'preset_order_buffer' => 'required|numeric|min:0|max:100',
+            'preset_setter_days' => 'required|integer|min:1',
+            'preset_hatcher_days' => 'required|integer|min:1',
+            'simulation_minutes_per_day' => 'required|integer|min:1',
+        ]);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        $setting = Setting::first();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Setting $setting)
-    {
-        //
-    }
+        $setting->update($validated);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Setting $setting)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Setting $setting)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Setting $setting)
-    {
-        //
+        return redirect()
+            ->route('settings.edit')
+            ->with('success', 'Settings updated successfully.');
     }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\EggInventory;
+use App\Models\Batch;
 use Illuminate\Http\Request;
 
-class EggInventoryController extends Controller
+class BatchController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -34,7 +34,7 @@ class EggInventoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(EggInventory $eggInventory)
+    public function show(Batch $batch)
     {
         //
     }
@@ -42,31 +42,23 @@ class EggInventoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit()
-{
-    $inventory = EggInventory::first();
+    public function edit(Batch $batch)
+    {
+        //
+    }
 
-    return view('inventory.edit', compact('inventory'));
-}
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Batch $batch)
+    {
+        //
+    }
 
-public function update(Request $request)
-{
-    $validated = $request->validate([
-        'egg_stock' => 'required|integer|min:0',
-    ]);
-
-    $inventory = EggInventory::first();
-
-    $inventory->update($validated);
-
-    return redirect()
-        ->route('inventory.edit')
-        ->with('success', 'Inventory updated.');
-}
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(EggInventory $eggInventory)
+    public function destroy(Batch $batch)
     {
         //
     }

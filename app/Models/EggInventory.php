@@ -8,4 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class EggInventory extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'egg_stock',
+    ];
 }

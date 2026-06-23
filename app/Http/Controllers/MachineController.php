@@ -10,10 +10,16 @@ class MachineController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        //
-    }
+   public function index()
+{
+    $machines = Machine::orderBy('machine_type')
+        ->orderBy('machine_name')
+        ->get();
+
+    return view('machines.index', compact('machines'));
+}
+
+
 
     /**
      * Show the form for creating a new resource.
@@ -34,11 +40,20 @@ class MachineController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Machine $machine)
-    {
-        //
-    }
+        public function show($id)
+            {
+                $machine = Machine::with('batches.order')
+                    ->findOrFail($id);
 
+                $currentBatch = $machine->batches()
+                    ->latest()
+                    ->first();
+
+                return view('machines.show', compact(
+                    'machine',
+                    'currentBatch'
+                ));
+            }
     /**
      * Show the form for editing the specified resource.
      */
