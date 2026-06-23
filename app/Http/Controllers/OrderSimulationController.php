@@ -8,43 +8,33 @@ use App\Models\Batch;
 use App\Models\Machine;
 use App\Models\Setting;
 
-
-
 class OrderSimulationController extends Controller
 {
+    public function start($orderId)
+    {
+        $order = Order::with('batches')->findOrFail($orderId);
 
-
-
-public function start($orderId)
-{
-    $order = Order::with('batches')->findOrFail($orderId);
-
-    $order->update([
-         'status' => 'running',
-        'current_day' => 0,
-        'simulation_status' => 'running',
-        'started_at' => now(),
-    ]);
-
-    foreach ($order->batches as $batch) {
-        $batch->update([
+        $order->update([
+            'current_day' => 0,
+            'simulation_status' => 'running',
             'started_at' => now(),
-            'day0_at' => now(),
-            'status' => 'running',
         ]);
+
+        foreach ($order->batches as $batch) {
+            $batch->update([
+                'started_at' => now(),
+                'day0_at' => now(),
+                'status' => 'running',
+            ]);
+        }
+
+        return back();
     }
 
-    return back();
-}
-
-
-public function nextDay($orderId)
+ public function nextDay($orderId)
 {
-
     $settings = Setting::first();
-
     $setterRate = $settings->preset_setter_survival_rate / 100;
-
 
     $order = Order::with('batches.machine')->findOrFail($orderId);
 
@@ -53,39 +43,40 @@ public function nextDay($orderId)
     }
 
     $order->increment('current_day');
-        $order->refresh();
-        $day = $order->current_day;
+    $order->refresh();
+
+    $day = $order->current_day;
 
     foreach ($order->batches as $batch) {
 
         $batch->increment('current_day');
 
-        $day = $order->current_day;
+        // DAY 18
+        if ($day == 18) {
 
-        // DAY MARKERS
-            if ($day == 18) {
+            $batch->update([
+                'day18_at' => now(),
+                'survived_day18' => (int) ($batch->batch_amount * $setterRate),
+                'spoiled_day18' => $batch->batch_amount - (int) ($batch->batch_amount * $setterRate),
+                'status' => 'paused',
+            ]);
 
-                $batch->update([
-                    'day18_at' => now(),
-                    'survived_day18' => (int) ($batch->batch_amount * $setterRate),
-                    'spoiled_day18' => $batch->batch_amount
-                        - (int) ($batch->batch_amount * $setterRate),
-                    'status' => 'paused',
-                ]);
+            $order->update([
+                'state' => 'paused',
+                'simulation_status' => 'paused',
+            ]);
+        }
 
-                $order->update([
-                    'state' => 'paused',
-                    'simulation_status' => 'paused',
-                ]);
-            }
-
+        // DAY 19
         if ($day == 19) {
             $batch->update([
                 'day19_at' => now(),
             ]);
         }
 
+        // DAY 21
         if ($day == 21) {
+
             $batch->update([
                 'day21_at' => now(),
                 'status' => 'completed',
@@ -93,7 +84,6 @@ public function nextDay($orderId)
                 'spoiled_day21' => $batch->batch_amount - (int) ($batch->batch_amount * $setterRate),
             ]);
 
-            // free machine
             $batch->machine->update([
                 'is_vacant' => true,
                 'status' => 'standby',
@@ -104,54 +94,59 @@ public function nextDay($orderId)
     return back();
 }
 
+public function day18($orderId)
+{
+    $order = Order::findOrFail($orderId);
+
+    $order->update([
+        'current_day' => 17
+    ]);
+
+    return $this->nextDay($orderId);
+}
 
 
-    public function day18($orderId)
+public function day21($orderId)
+{
+    $order = Order::findOrFail($orderId);
+
+    $order->update([
+        'current_day' => 20
+    ]);
+
+    return $this->nextDay($orderId);
+}
+
+
+    public function transferToHatchers($orderId)
     {
-        $order = Order::findOrFail($orderId);
-       # $order->update(['current_day' => 18]);
-        $order->update([
-            'current_day' => 18,
-            'status' => 'waiting_transfer',
-            'state' => 'paused',
-            'simulation_status' => 'paused',
-        ]);
+        $order = Order::with('batches')->findOrFail($orderId);
 
-        return $this->nextDay($orderId);
-    }
-
-
-
-        public function day21($orderId)
-        {
-            $order = Order::findOrFail($orderId);
-            $order->update(['current_day' => 21]);
-
-            return $this->nextDay($orderId);
+        foreach ($order->batches as $batch) {
+            $batch->update([
+                'machine_type' => 'hatcher',
+                'phase' => 'hatcher',
+                'status' => 'pending',
+                'started_at' => null,
+                'day0_at' => null,
+            ]);
         }
 
+        return back();
+    }
 
+    public function transferBatch($batchId)
+    {
+        $batch = Batch::findOrFail($batchId);
 
-        public function transferToHatchers($orderId)
-            {
-                $order = Order::with('batches')->findOrFail($orderId);
+        $batch->update([
+            'machine_type' => 'hatcher',
+            'phase' => 'hatcher',
+            'status' => 'pending',
+            'started_at' => null,
+            'day0_at' => null,
+        ]);
 
-                $order->update([
-                    'state' => 'hatcher',
-                ]);
-
-                foreach ($order->batches as $batch) {
-
-                    $batch->update([
-                        'machine_type' => 'hatcher',
-                        'status' => 'pending',
-                    ]);
-                }
-
-                return back();
-            }
-
-
-
-
+        return back();
+    }
 }

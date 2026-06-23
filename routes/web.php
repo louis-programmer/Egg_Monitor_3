@@ -93,8 +93,9 @@ Route::prefix('orders')->group(function () {
     Route::get('/{order}', [OrderController::class, 'show'])
         ->name('orders.show');
 
-     Route::get('/orders/{order}/transfer',
-            [OrderSimulationController::class, 'transferToHatchers']
-        );
-
+    Route::post('/{order}/transfer', [OrderSimulationController::class, 'transferToHatchers'])
+        ->name('orders.transfer');
 });
+
+Route::post('/batches/{batch}/transfer', [OrderSimulationController::class, 'transferBatch'])
+    ->name('batches.transfer');
