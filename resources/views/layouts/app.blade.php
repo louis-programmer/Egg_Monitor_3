@@ -33,6 +33,18 @@
             border-color:red;
         }
 
+
+body{
+    background:#f1f3f5;
+    font-family:Arial, Helvetica, sans-serif;
+    margin:0;
+    padding:20px;
+}
+
+.summary-card,
+.machine-card{
+    background:#ffffff;
+}
     </style>
 
 </head>

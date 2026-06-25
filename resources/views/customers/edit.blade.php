@@ -6,5 +6,15 @@
 
     <input type="text" name="name" value="{{ $customer->name }}">
 
+
+<label>Color</label>
+
+<input
+    type="color"
+    name="color_code"
+    value="{{ old('color_code', $customer->color_code ?? '#3498db') }}"
+>
+
+
     <button type="submit">Update</button>
 </form>

@@ -28,4 +28,6 @@ class Machine extends Model
         }
 
 
+
+        
 }

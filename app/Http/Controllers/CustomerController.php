@@ -18,35 +18,40 @@ class CustomerController extends Controller
         return view('customers.create');
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
+public function store(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'color_code' => 'required|string',
+    ]);
 
-        Customer::create($request->only('name'));
+    Customer::create(
+        $request->only('name', 'color_code')
+    );
 
-        return redirect()->route('customers.index')
-            ->with('success', 'Customer created successfully.');
-    }
+    return redirect()->route('customers.index')
+        ->with('success', 'Customer created successfully.');
+}
 
     public function edit(Customer $customer)
     {
         return view('customers.edit', compact('customer'));
     }
 
-    public function update(Request $request, Customer $customer)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
+public function update(Request $request, Customer $customer)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'color_code' => 'required|string',
+    ]);
 
-        $customer->update($request->only('name'));
+    $customer->update(
+        $request->only('name', 'color_code')
+    );
 
-        return redirect()->route('customers.index')
-            ->with('success', 'Customer updated successfully.');
-    }
-
+    return redirect()->route('customers.index')
+        ->with('success', 'Customer updated successfully.');
+}
     public function destroy(Customer $customer)
     {
         $customer->delete();
